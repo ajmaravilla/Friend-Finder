@@ -1,50 +1,59 @@
-// Setting up dependencies
-const path = require('path');
-const friendData = require('../data/friends.js');
-const questionData = require('../data/questions.js');
+// Pull in required dependencies
+var path = require('path');
 
+// Import the list of friend entries
+var friends = require('../data/friends.js');
+
+// Export API routes
 module.exports = function(app) {
-  
-  // GET route with url: /api/friends, display JSON of all possible friends
-  app.get('/api/friends', function (req, res) {
-    res.json(friendData);
-  })
-  app.get('/api/questions', function (req, res) { // try to set up similar for questions
-    res.json(questionData);
-  })
-  // POST routes /api/friends, handle incoming survey results, route will also handle compatibility logic
-  app.post('/api/friends', function (req, res) {
-    var newFriendScore = req.body.scores;
-    var scoreDiffArr = [];
-    var compare = 0;
+	// console.log('___ENTER apiRoutes.js___');
 
-    // logic for finding the difference in value between the new user and current users from database
-    for (var i=0; i < friendData.length; i++) {
-      var scoreDiff = 0;
-      for (var j=0; j < newFriendScore.length; j++) {
-        var friendDataScore = friendData[i].scores[j];
-        scoreDiff += Math.abs(parseInt(newFriendScore[j]) - parseInt(friendDataScore));
-      }
-      // pushes the difference of the score into the scoreDiffArr for comparison later
-      scoreDiffArr.push(scoreDiff);
-    };
+	// Total list of friend entries
+	app.get('/api/friends', function(req, res) {
+		res.json(friends);
+	});
 
-    // cycle through users to find best match
-    for (var i=0; i < scoreDiffArr.length; i++) {
-      if (scoreDiffArr[i] <= scoreDiffArr[compare]) {
-        compare = i; // compares each user in array with lowest score being the best match
-      }
-    }
+	// Add new friend entry 
+	app.post('/api/friends', function(req, res) {
+		// Capture the user input object
+		var userInput = req.body;
+		// console.log('userInput = ' + JSON.stringify(userInput));
 
-    console.log(scoreDiffArr);
-    var specialFriend = friendData[compare]; // lowest score of the group
-    console.log(specialFriend.name);
-    friendData.push(req.body);
-    res.json(specialFriend);
-  });
+		var userResponses = userInput.scores;
+		// console.log('userResponses = ' + userResponses);
+
+		// Compute best friend match
+		var matchName = '';
+		var matchImage = '';
+		var totalDifference = 10000; // Make the initial value big for comparison
+
+		// Examine all existing friends in the list
+		for (var i = 0; i < friends.length; i++) {
+			// console.log('friend = ' + JSON.stringify(friends[i]));
+
+			// Compute differenes for each question
+			var diff = 0;
+			for (var j = 0; j < userResponses.length; j++) {
+				diff += Math.abs(friends[i].scores[j] - userResponses[j]);
+			}
+			// console.log('diff = ' + diff);
+
+			// If lowest difference, record the friend match
+			if (diff < totalDifference) {
+				// console.log('Closest match found = ' + diff);
+				// console.log('Friend name = ' + friends[i].name);
+				// console.log('Friend image = ' + friends[i].photo);
+
+				totalDifference = diff;
+				matchName = friends[i].name;
+				matchImage = friends[i].photo;
+			}
+		}
+
+		// Add new user
+		friends.push(userInput);
+
+		// Send appropriate response
+		res.json({status: 'OK', matchName: matchName, matchImage: matchImage});
+	});
 };
-
-/** Psuedo Code to finish homework
- ** The all js files work, if ran as is, the program will generate a 'special friend' in the console.
- ** Remaining works are to code html with a modal to product a pop up of the 'special friend;
- ** The modal will be in the home.html file and will require a click event and gets tthe res.json from this file and generates into html file **/

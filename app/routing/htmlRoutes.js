@@ -1,16 +1,18 @@
-// Setting up dependencies
-const path = require('path');
-var questionsArray = require('../data/questions.js');
+// Pull in required dependencies
+var path = require('path');
 
-// Routing paths
-module.exports = function (app) {
-  // GET route to /survey which should display survey page
-  app.get('/survey', function (req, res) {
-    res.sendFile(path.join(__dirname, "../public/survey.html"));
-  });
-  //  Default, catch-all route that leads to home.html, displays home page
-  app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, "../public/home.html"));
-  });
+// Export HTML routes
+module.exports = function(app) {
+	// console.log('___ENTER htmlRoutes.js___');
 
+	// Home page
+	app.get('/', function(req, res) {
+		res.sendFile(path.join(__dirname, '../public/home.html'));
+	});
+
+	// Survey page
+	app.get('/survey', function(req, res) {
+		res.sendFile(path.join(__dirname, '../public/survey.html'));
+	});
 };
+
