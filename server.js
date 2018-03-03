@@ -1,21 +1,25 @@
-// Setting up app dependencies
-const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-// Create Express server and set the PORT
-const app = express();
-const PORT = process.env.PORT || 4000;
-// Sets up the Express app to handle data parsing
-app.use(bodyParser.urlencoded({ extended: true }));
+// Pull in required dependencies
+var express = require('express');
+var bodyParser = require('body-parser');
+var path = require('path');
+
+// Configure the Express application
+var app = express();
+var PORT = process.env.PORT || 4000
+
+// Expose the public directory to access CSS files
+app.use(express.static(path.join(__dirname, './app/public')));
+
+// Add middleware for parsing incoming request bodies
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.text());
 
-// Main Routes
-require('./app/routing/apiRoutes')(app);
-require('./app/routing/htmlRoutes')(app);
+// Add the application routes
+require(path.join(__dirname, './app/routing/apiRoutes'))(app);
+require(path.join(__dirname, './app/routing/htmlRoutes'))(app);
 
-// Listening on PORT
-app.listen(4000, function () {
-  console.log(`App listening on PORT: ${PORT}`);
+// Start listening on PORT
+app.listen(PORT, function() {
+  console.log('Friend Finder app is listening on PORT: ' + PORT);
 });
-
-// PLEASE NOTE: see apiRoutes.js for comments on Psuedo code to finish the homework
